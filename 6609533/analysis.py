@@ -1,9 +1,7 @@
 import pandas as pd
 import numpy as np
 import re
-import nltk
-from nltk.corpus import stopwords
-from nltk.stem import WordNetLemmatizer
+# NLTK imports removed – not required for preprocessing
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.ensemble import RandomForestClassifier
@@ -19,29 +17,6 @@ try:
     _create_unverified_https_context = ssl._create_unverified_context
 except AttributeError:
     pass
-else:
-    ssl._create_default_https_context = _create_unverified_https_context
-
-# Download NLTK data
-nltk.download('stopwords', quiet=True)
-nltk.download('wordnet', quiet=True)
-nltk.download('omw-1.4', quiet=True)
-
-def preprocess_text(text):
-    """Preprocess text for ML model"""
-    text = text.lower()
-    text = re.sub(r'[^a-zA-Z\s]', '', text)
-    tokens = text.split()
-    stop_words = set(stopwords.words('english'))
-    tokens = [word for word in tokens if word not in stop_words]
-    lemmatizer = WordNetLemmatizer()
-    tokens = [lemmatizer.lemmatize(word) for word in tokens]
-    return ' '.join(tokens)
-
-
-
-def main():
-    print("="*60)
     print("ENHANCED CYBERSECURITY THREAT ANALYSIS WITH THREAT LEVEL")
     print("="*60)
     
