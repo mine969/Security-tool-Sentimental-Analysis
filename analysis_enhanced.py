@@ -13,15 +13,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import joblib
 
-import ssl
-
-try:
-    _create_unverified_https_context = ssl._create_unverified_context
-except AttributeError:
-    pass
-else:
-    ssl._create_default_https_context = _create_unverified_https_context
-
 # Download NLTK data
 nltk.download('stopwords', quiet=True)
 nltk.download('wordnet', quiet=True)
@@ -38,30 +29,45 @@ def preprocess_text(text):
     tokens = [lemmatizer.lemmatize(word) for word in tokens]
     return ' '.join(tokens)
 
-
+def get_correct_label(text):
+    """Generate correct threat category label based on text content"""
+    text = text.lower()
+    if any(x in text for x in ['ransomware', 'encrypted', 'bitcoin', 'payment', 'locked', 'decrypt']):
+        return 'Ransomware'
+    elif any(x in text for x in ['phishing', 'email', 'link', 'click', 'password', 'login', 'account', 'credential']):
+        return 'Phishing'
+    elif any(x in text for x in ['ddos', 'traffic', 'overwhelmed', 'service', 'down', 'packet', 'flood', 'slow', 'denial', 'website', 'attack']):
+        return 'DDoS'
+    elif any(x in text for x in ['malware', 'trojan', 'virus', 'spyware', 'infected', 'backdoor', 'worm']):
+        return 'Malware'
+    elif any(x in text for x in ['sql', 'injection', 'database', 'query']):
+        return 'SQL Injection'
+    else:
+        return 'Other'
 
 def main():
     print("="*60)
     print("ENHANCED CYBERSECURITY THREAT ANALYSIS WITH THREAT LEVEL")
     print("="*60)
     
-    print("\nLoading dataset...")
+    print("\nLoading enhanced dataset...")
     try:
         # Try to load enhanced CSV first, fall back to original if not available
         try:
             df = pd.read_csv('cyber_security_enhanced.csv')
             print("✓ Loaded enhanced dataset with Threat Level column")
-            has_threat_level = True
         except FileNotFoundError:
             df = pd.read_csv('cyber_security.csv')
-            print("✓ Loaded original dataset")
-            print("  Note: Run add_threat_level.py to create enhanced dataset with Threat Level")
-            has_threat_level = False
+            print("⚠ Enhanced CSV not found, using original dataset")
+            print("  Run add_threat_level.py to create enhanced dataset")
     except FileNotFoundError:
         print("Error: Dataset not found. Please ensure cyber_security.csv exists.")
         return
 
     print(f"Dataset shape: {df.shape}")
+    
+    # Check if Threat Level column exists
+    has_threat_level = 'Threat Level' in df.columns
     
     if 'Cleaned Threat Description' not in df.columns:
         print("Error: Required columns not found.")
@@ -71,9 +77,12 @@ def main():
     print("\nPreprocessing text...")
     df['clean_text'] = df['Cleaned Threat Description'].apply(preprocess_text)
     
-    # Use existing labels from dataset
-    print("Using existing labels from dataset...")
-    df['target_class'] = df['Threat Category']
+    # Generate corrected labels based on text content
+    print("Generating corrected labels based on text content...")
+    df['target_class'] = df['Cleaned Threat Description'].apply(get_correct_label)
+    
+    # Filter out 'Other'
+    df = df[df['target_class'] != 'Other']
     
     print("\n" + "="*60)
     print("CLASS DISTRIBUTION")
@@ -81,7 +90,7 @@ def main():
     print("\nThreat Category Distribution:")
     print(df['target_class'].value_counts())
     
-    if has_threat_level and 'Threat Level' in df.columns:
+    if has_threat_level:
         print("\nThreat Level Distribution:")
         print(df['Threat Level'].value_counts())
         print("\nThreat Level by Category:")
@@ -157,7 +166,7 @@ def main():
 
     # Train Threat Level Predictor if available
     threat_level_model = None
-    if has_threat_level and 'Threat Level' in df.columns:
+    if has_threat_level:
         print("\n" + "="*60)
         print("THREAT LEVEL PREDICTION MODEL")
         print("="*60)
@@ -231,4 +240,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

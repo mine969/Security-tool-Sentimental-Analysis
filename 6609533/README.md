@@ -13,3 +13,11 @@
 - `qa_test.py`: Automated QA testing script.
 - `security_model.pkl`: The trained model (saved for integration).
 - `tfidf_vectorizer.pkl`: The feature extractor (saved for integration).
+
+## Methodology Changes
+
+The `analysis.py` script in this directory has been modified to:
+
+1. **Rely Solely on Dataset Labels**: It uses the `Threat Category` column from `cyber_security.csv` directly for training.
+2. **Remove Rule-Based Logic**: The hardcoded keyword matching (hybrid approach) has been removed to ensure the model learns purely from the provided data.
+3. **Include All Categories**: No filtering of 'Other' categories (unless not present in dataset).
