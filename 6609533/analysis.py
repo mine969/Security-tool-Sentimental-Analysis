@@ -10,7 +10,6 @@ from sklearn.preprocessing import LabelEncoder
 import joblib
 import matplotlib.pyplot as plt
 import seaborn as sns
-from scipy.sparse import hstack
 
 # PyTorch imports
 import torch
@@ -74,19 +73,10 @@ class BiLSTMClassifier(nn.Module):
         self.dropout = nn.Dropout(0.5)
 
     def forward(self, x):
-        # x: [batch_size, seq_len]
         embedded = self.embedding(x)
-        # embedded: [batch_size, seq_len, emb_dim]
-        
         lstm_out, (hidden, cell) = self.lstm(embedded)
-        # lstm_out: [batch_size, seq_len, hidden_dim * 2]
-        
-        # Global Max Pooling
-        # Permute to [batch_size, hidden_dim * 2, seq_len] for max_pool1d
         lstm_out = lstm_out.permute(0, 2, 1)
         pooled = torch.max(lstm_out, dim=2)[0]
-        # pooled: [batch_size, hidden_dim * 2]
-        
         out = self.fc(self.dropout(pooled))
         return out
 
@@ -102,8 +92,7 @@ class SimpleTokenizer:
         for text in texts:
             word_counts.update(text.split())
         
-        # Keep most common words
-        most_common = word_counts.most_common(self.max_words - 2) # Reserve 0 for PAD, 1 for OOV
+        most_common = word_counts.most_common(self.max_words - 2)
         
         self.word_index = {'<PAD>': 0, '<OOV>': 1}
         for word, _ in most_common:
@@ -117,7 +106,7 @@ class SimpleTokenizer:
         for text in texts:
             seq = []
             for word in text.split():
-                seq.append(self.word_index.get(word, 1)) # 1 is OOV
+                seq.append(self.word_index.get(word, 1))
             sequences.append(seq)
         return sequences
 
@@ -390,7 +379,7 @@ def main():
         
         print(f"Epoch {epoch+1}/{epochs} - Loss: {avg_loss:.4f} - Accuracy: {train_acc:.4f}")
         
-        if train_acc > 0.999: # Early stopping if perfect
+        if train_acc > 0.999:
             print("Reached near perfect accuracy. Stopping early.")
             break
     
@@ -501,7 +490,7 @@ def main():
     print("Type a threat description to see predictions from all models.")
     print("Type 'exit' to quit.\n")
 
-    lstm_model.eval() # Set to eval mode
+    lstm_model.eval()
 
     while True:
         user_input = input("Enter threat description: ")
