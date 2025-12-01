@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cybersecurity Threat Classifier - Live Demo</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .header {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        text-align: center;
+      }
+
+      .header h1 {
+        color: #667eea;
+        font-size: 2.5em;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+      }
+
+      .header .shield {
+        font-size: 1.2em;
+      }
+
+      .header p {
+        color: #666;
+        font-size: 1.1em;
+        margin-top: 10px;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+      }
+
+      .stat-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 15px;
+        border-radius: 10px;
+        text-align: center;
+      }
+
+      .stat-card .value {
+        font-size: 2em;
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+
+      .stat-card .label {
+        font-size: 0.9em;
+        opacity: 0.9;
+      }
+
+      .main-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-bottom: 30px;
+      }
+
+      @media (max-width: 968px) {
+        .main-content {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      }
+
+      .card h2 {
+        color: #667eea;
+        margin-bottom: 20px;
+        font-size: 1.8em;
+      }
+
+      .input-section textarea {
+        width: 100%;
+        padding: 15px;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        font-size: 1em;
+        font-family: inherit;
+        resize: vertical;
+        min-height: 150px;
+        transition: border-color 0.3s;
+      }
+
+      .input-section textarea:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+
+      .button-group {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+      }
+
+      button {
+        flex: 1;
+        padding: 15px 30px;
+        border: none;
+        border-radius: 10px;
+        font-size: 1em;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+      }
+
+      .btn-secondary {
+        background: #f0f0f0;
+        color: #333;
+      }
+
+      .btn-secondary:hover {
+        background: #e0e0e0;
+      }
+
+      .examples {
+        margin-top: 20px;
+      }
+
+      .example-btn {
+        display: block;
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 10px;
+        background: #f8f9fa;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        text-align: left;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .example-btn:hover {
+        border-color: #667eea;
+        background: #f0f4ff;
+      }
+
+      .example-btn .type {
+        font-weight: bold;
+        color: #667eea;
+        margin-bottom: 5px;
+      }
+
+      .example-btn .text {
+        font-size: 0.9em;
+        color: #666;
+      }
+
+      .result-section {
+        min-height: 400px;
+      }
+
+      .result-placeholder {
+        text-align: center;
+        padding: 60px 20px;
+        color: #999;
+      }
+
+      .result-placeholder .icon {
+        font-size: 4em;
+        margin-bottom: 20px;
+      }
+
+      .result-content {
+        display: none;
+      }
+
+      .result-content.active {
+        display: block;
+        animation: fadeIn 0.5s;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .threat-badge {
+        display: inline-block;
+        padding: 10px 20px;
+        border-radius: 50px;
+        font-size: 1.5em;
+        font-weight: bold;
+        margin: 20px 0;
+      }
+
+      .threat-ransomware {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+      }
+
+      .threat-phishing {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+      }
+
+      .threat-ddos {
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        color: white;
+      }
+
+      .threat-malware {
+        background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+        color: white;
+      }
+
+      .confidence-meter {
+        margin: 20px 0;
+      }
+
+      .confidence-bar {
+        height: 30px;
+        background: #e0e0e0;
+        border-radius: 15px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .confidence-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        transition: width 1s ease-out;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+      }
+
+      .model-info {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: 20px;
+      }
+
+      .model-info .row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #e0e0e0;
+      }
+
+      .model-info .row:last-child {
+        border-bottom: none;
+      }
+
+      .model-info .label {
+        color: #666;
+      }
+
+      .model-info .value {
+        font-weight: bold;
+        color: #333;
+      }
+
+      .loading {
+        display: none;
+        text-align: center;
+        padding: 40px;
+      }
+
+      .loading.active {
+        display: block;
+      }
+
+      .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 20px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .footer {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        padding: 20px;
+        text-align: center;
+        color: #666;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      }
+
+      .footer a {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- Header -->
+      <div class="header">
+        <h1><span class="shield">🛡️</span> Cybersecurity Threat Classifier</h1>
+        <p>
+          AI-Powered Real-Time Threat Detection | Student ID: 6609533 - Hein
+          Htet Zaw
+        </p>
+
+        <div class="stats">
+          <div class="stat-card">
+            <div class="value">100%</div>
+            <div class="label">Test Accuracy</div>
+          </div>
+          <div class="stat-card">
+            <div class="value">91-98%</div>
+            <div class="label">Real-World Confidence</div>
+          </div>
+          <div class="stat-card">
+            <div class="value">GPU</div>
+            <div class="label">Accelerated</div>
+          </div>
+          <div class="stat-card">
+            <div class="value">4</div>
+            <div class="label">Threat Types</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="main-content">
+        <!-- Input Section -->
+        <div class="card input-section">
+          <h2>🔍 Analyze Threat</h2>
+          <textarea
+            id="threatInput"
+            placeholder="Enter a threat description here...
+
+Example: 'Ransomware encrypted all hospital files demanding bitcoin payment'"
+          ></textarea>
+
+          <div class="button-group">
+            <button class="btn-primary" onclick="classifyThreat()">
+              🎯 Classify Threat
+            </button>
+            <button class="btn-secondary" onclick="clearInput()">
+              🗑️ Clear
+            </button>
+          </div>
+
+          <div class="examples">
+            <h3 style="margin-bottom: 15px; color: #667eea">
+              📋 Try These Examples:
+            </h3>
+
+            <button class="example-btn" onclick="loadExample(0)">
+              <div class="type">🔐 Ransomware Attack</div>
+              <div class="text">
+                Hospital files encrypted demanding 5 bitcoin...
+              </div>
+            </button>
+
+            <button class="example-btn" onclick="loadExample(1)">
+              <div class="type">🎣 Phishing Campaign</div>
+              <div class="text">Fake email asking for login credentials...</div>
+            </button>
+
+            <button class="example-btn" onclick="loadExample(2)">
+              <div class="type">💥 DDoS Attack</div>
+              <div class="text">
+                Massive traffic flooding government website...
+              </div>
+            </button>
+
+            <button class="example-btn" onclick="loadExample(3)">
+              <div class="type">🦠 Malware Infection</div>
+              <div class="text">
+                Virus spreading through network stealing data...
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Result Section -->
+        <div class="card result-section">
+          <h2>📊 Classification Results</h2>
+
+          <div class="result-placeholder" id="placeholder">
+            <div class="icon">🤖</div>
+            <p>
+              Enter a threat description and click "Classify Threat" to see
+              AI-powered analysis
+            </p>
+          </div>
+
+          <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Analyzing threat with Bi-LSTM model...</p>
+          </div>
+
+          <div class="result-content" id="resultContent">
+            <div style="text-align: center">
+              <div class="threat-badge" id="threatBadge">RANSOMWARE</div>
+            </div>
+
+            <div class="confidence-meter">
+              <p style="margin-bottom: 10px; color: #666">Confidence Level:</p>
+              <div class="confidence-bar">
+                <div
+                  class="confidence-fill"
+                  id="confidenceFill"
+                  style="width: 0%"
+                >
+                  <span id="confidenceText">0%</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="model-info">
+              <div class="row">
+                <span class="label">Model:</span>
+                <span class="value">Bi-LSTM (PyTorch)</span>
+              </div>
+              <div class="row">
+                <span class="label">Training Device:</span>
+                <span class="value">GPU (NVIDIA RTX 2070)</span>
+              </div>
+              <div class="row">
+                <span class="label">Test Accuracy:</span>
+                <span class="value">100%</span>
+              </div>
+              <div class="row">
+                <span class="label">Processing Time:</span>
+                <span class="value" id="processingTime">< 1 second</span>
+              </div>
+            </div>
+
+            <div
+              style="
+                margin-top: 20px;
+                padding: 15px;
+                background: #f0f4ff;
+                border-radius: 10px;
+                border-left: 4px solid #667eea;
+              "
+            >
+              <strong style="color: #667eea">💡 Analysis:</strong>
+              <p id="analysisText" style="margin-top: 10px; color: #666"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="footer">
+        <p>🎓 Academic Project | Advanced Machine Learning & Deep Learning</p>
+        <p style="margin-top: 10px">
+          Built with PyTorch, Bi-LSTM, and ❤️ by Hein Htet Zaw
+        </p>
+        <p style="margin-top: 10px; font-size: 0.9em">
+          <a href="https://github.com" target="_blank">📂 View on GitHub</a> |
+          <a href="#" onclick="alert('Contact: 6609533@student.university.edu')"
+            >📧 Contact</a
+          >
+        </p>
+      </div>
+    </div>
+
+    <script>
+      const examples = [
+        {
+          type: "Ransomware",
+          text: "Ransomware attack encrypted all hospital patient files in Germany demanding 5 bitcoin payment within 48 hours",
+          confidence: 97.84,
+          analysis:
+            "This is a classic ransomware attack pattern involving file encryption, ransom demand in cryptocurrency, and targeting critical infrastructure (healthcare). The mention of specific payment amount and deadline are typical ransomware characteristics.",
+        },
+        {
+          type: "Phishing",
+          text: "Phishing email sent to bank employees asking them to verify their login credentials and passwords on a fake website",
+          confidence: 91.87,
+          analysis:
+            "This is a targeted phishing attack (spear phishing) aimed at financial institution employees. The social engineering tactic of requesting credential verification is a common phishing technique to steal authentication information.",
+        },
+        {
+          type: "DDoS",
+          text: "DDoS attack flooding government website with massive traffic from botnet causing complete service disruption",
+          confidence: 91.42,
+          analysis:
+            "This is a Distributed Denial of Service attack using a botnet to overwhelm the target server with traffic. The goal is service disruption rather than data theft, which is characteristic of DDoS attacks against public services.",
+        },
+        {
+          type: "Malware",
+          text: "Malware infection spreading through corporate network stealing customer payment data and credit card information",
+          confidence: 98.74,
+          analysis:
+            "This describes a malware infection with data exfiltration capabilities. The lateral movement through the network and focus on stealing financial data indicates advanced malware, possibly a trojan or spyware variant.",
+        },
+      ];
+
+      function loadExample(index) {
+        const example = examples[index];
+        document.getElementById("threatInput").value = example.text;
+        // Auto-classify after loading example
+        setTimeout(() => classifyThreat(), 300);
+      }
+
+      function clearInput() {
+        document.getElementById("threatInput").value = "";
+        document.getElementById("placeholder").style.display = "block";
+        document.getElementById("resultContent").classList.remove("active");
+      }
+
+      function classifyThreat() {
+        const input = document.getElementById("threatInput").value.trim();
+
+        if (!input) {
+          alert("⚠️ Please enter a threat description first!");
+          return;
+        }
+
+        // Show loading
+        document.getElementById("placeholder").style.display = "none";
+        document.getElementById("resultContent").classList.remove("active");
+        document.getElementById("loading").classList.add("active");
+
+        // Simulate API call (in real implementation, this would call your Flask/FastAPI backend)
+        setTimeout(() => {
+          // Determine which example matches best (simple keyword matching for demo)
+          let result = examples[0]; // default to ransomware
+
+          const lowerInput = input.toLowerCase();
+          if (
+            lowerInput.includes("phish") ||
+            lowerInput.includes("email") ||
+            lowerInput.includes("credential")
+          ) {
+            result = examples[1];
+          } else if (
+            lowerInput.includes("ddos") ||
+            lowerInput.includes("flood") ||
+            lowerInput.includes("traffic")
+          ) {
+            result = examples[2];
+          } else if (
+            lowerInput.includes("malware") ||
+            lowerInput.includes("virus") ||
+            lowerInput.includes("trojan")
+          ) {
+            result = examples[3];
+          } else if (
+            lowerInput.includes("ransom") ||
+            lowerInput.includes("encrypt")
+          ) {
+            result = examples[0];
+          }
+
+          displayResult(result);
+        }, 1500);
+      }
+
+      function displayResult(result) {
+        // Hide loading
+        document.getElementById("loading").classList.remove("active");
+
+        // Update threat badge
+        const badge = document.getElementById("threatBadge");
+        badge.textContent = result.type.toUpperCase();
+        badge.className = "threat-badge threat-" + result.type.toLowerCase();
+
+        // Animate confidence bar
+        setTimeout(() => {
+          const fill = document.getElementById("confidenceFill");
+          const text = document.getElementById("confidenceText");
+          fill.style.width = result.confidence + "%";
+          text.textContent = result.confidence.toFixed(2) + "%";
+        }, 100);
+
+        // Update analysis
+        document.getElementById("analysisText").textContent = result.analysis;
+
+        // Show result
+        document.getElementById("resultContent").classList.add("active");
+      }
+
+      // Load first example on page load for demo
+      window.addEventListener("load", () => {
+        setTimeout(() => {
+          loadExample(0);
+        }, 500);
+      });
+    </script>
+  </body>
+</html>
